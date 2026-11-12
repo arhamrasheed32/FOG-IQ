@@ -113,6 +113,40 @@ function calculateDynamicChennaiRoute(origin: string, destination: string): Rout
   };
 }
 
+// In-memory alert lifecycle store
+let localAlertsStore: Alert[] = [
+  {
+    id: 'alt-chennai-01',
+    severity: 'INFO',
+    corridor_id: 'OMR',
+    sensor_id: 'S08',
+    source: 'Edge Micro-Inference',
+    description: 'OMR Tidel Park junction experiencing moderate evening IT commute volume.',
+    status: 'ACTIVE',
+    created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString()
+  },
+  {
+    id: 'alt-chennai-02',
+    severity: 'WARNING',
+    corridor_id: 'GST_ROAD',
+    sensor_id: 'S13',
+    source: 'Fog Gateway South-West',
+    description: 'Kathipara Cloverleaf merging buffer elevated to 42 vehicles/min.',
+    status: 'ACTIVE',
+    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+  },
+  {
+    id: 'alt-chennai-03',
+    severity: 'CRITICAL',
+    corridor_id: 'ANNA_SALAI',
+    sensor_id: 'S03',
+    source: 'Fog Gateway Correlation',
+    description: 'Gemini Flyover bottleneck detected. Signal greenwave phase extended.',
+    status: 'ACTIVE',
+    created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString()
+  }
+];
+
 export const api = {
   // Command Center
   getCommandCenterSummary: async () => {
@@ -432,30 +466,20 @@ export const api = {
       if (severity) params.append('severity', severity);
       if (params.toString()) url += `?${params.toString()}`;
       const res = await fetch(url);
-      if (res.ok) return await res.json();
-    } catch (e) {}
-    return [
-      {
-        id: 'alt-chennai-01',
-        severity: 'INFO',
-        corridor_id: 'OMR',
-        sensor_id: 'S08',
-        source: 'Edge Micro-Inference',
-        description: 'OMR Tidel Park junction experiencing moderate evening IT commute volume.',
-        status: 'ACTIVE',
-        created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-      },
-      {
-        id: 'alt-chennai-02',
-        severity: 'WARNING',
-        corridor_id: 'GST_ROAD',
-        sensor_id: 'S13',
-        source: 'Fog Gateway South-West',
-        description: 'Kathipara Cloverleaf merging buffer elevated to 42 vehicles/min.',
-        status: 'ACTIVE',
-        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
       }
-    ];
+    } catch (e) {}
+
+    let filtered = [...localAlertsStore];
+    if (status && status !== 'ALL') {
+      filtered = filtered.filter(a => a.status === status);
+    }
+    if (severity && severity !== 'ALL') {
+      filtered = filtered.filter(a => a.severity === severity);
+    }
+    return filtered;
   },
 
   acknowledgeAlert: async (alertId: string) => {
@@ -463,6 +487,10 @@ export const api = {
       const res = await fetch(`${API_BASE}/alerts/${alertId}/acknowledge`, { method: 'POST' });
       if (res.ok) return await res.json();
     } catch (e) {}
+
+    localAlertsStore = localAlertsStore.map(a =>
+      a.id === alertId ? { ...a, status: 'ACKNOWLEDGED' as const, acknowledged_at: new Date().toISOString() } : a
+    );
     return { status: 'ACKNOWLEDGED', alert_id: alertId };
   },
 
@@ -471,6 +499,10 @@ export const api = {
       const res = await fetch(`${API_BASE}/alerts/${alertId}/resolve`, { method: 'POST' });
       if (res.ok) return await res.json();
     } catch (e) {}
+
+    localAlertsStore = localAlertsStore.map(a =>
+      a.id === alertId ? { ...a, status: 'RESOLVED' as const, resolved_at: new Date().toISOString() } : a
+    );
     return { status: 'RESOLVED', alert_id: alertId };
   },
 

@@ -7,13 +7,14 @@ export const AlertCenterPage: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
+  const [notification, setNotification] = useState<string | null>(null);
 
   const fetchAlerts = async () => {
     try {
       const s = statusFilter !== 'ALL' ? statusFilter : undefined;
       const sv = severityFilter !== 'ALL' ? severityFilter : undefined;
       const res = await api.getAlerts(s, sv);
-      setAlerts(res);
+      setAlerts(res || []);
     } catch (e) {
       console.error(e);
     }
@@ -21,30 +22,56 @@ export const AlertCenterPage: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
-    const interval = setInterval(fetchAlerts, 3000);
+    const interval = setInterval(fetchAlerts, 4000);
     return () => clearInterval(interval);
   }, [statusFilter, severityFilter]);
 
   const handleAcknowledge = async (id: string) => {
+    // Immediate optimistic state update
+    setAlerts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: 'ACKNOWLEDGED' } : a))
+    );
+    setNotification(`Alert ${id} acknowledged by operator`);
+    setTimeout(() => setNotification(null), 3000);
+
     try {
       await api.acknowledgeAlert(id);
-      fetchAlerts();
     } catch (e) {
-      console.error(e);
+      console.error('Failed to acknowledge alert:', e);
     }
   };
 
   const handleResolve = async (id: string) => {
+    // Immediate optimistic state update
+    setAlerts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: 'RESOLVED' } : a))
+    );
+    setNotification(`Alert ${id} marked as resolved`);
+    setTimeout(() => setNotification(null), 3000);
+
     try {
       await api.resolveAlert(id);
-      fetchAlerts();
     } catch (e) {
-      console.error(e);
+      console.error('Failed to resolve alert:', e);
     }
   };
 
+  const filteredAlerts = alerts.filter((a) => {
+    if (statusFilter !== 'ALL' && a.status !== statusFilter) return false;
+    if (severityFilter !== 'ALL' && a.severity !== severityFilter) return false;
+    return true;
+  });
+
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl animate-fade-in border border-slate-700">
+          <CheckCircle className="w-4 h-4 text-emerald-400" />
+          <span>{notification}</span>
+        </div>
+      )}
+
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-4 p-5 bg-card border border-slate-200/90 rounded-3xl shadow-card">
         <div className="flex items-center gap-2">
@@ -52,7 +79,7 @@ export const AlertCenterPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -66,7 +93,7 @@ export const AlertCenterPage: React.FC = () => {
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700"
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           >
             <option value="ALL">All Severities</option>
             <option value="CRITICAL">Critical</option>
@@ -75,8 +102,8 @@ export const AlertCenterPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="ml-auto text-xs font-mono font-bold text-brand-600 bg-brand-50 px-3 py-1 rounded-xl">
-          {alerts.length} Incidents Tracked
+        <div className="ml-auto text-xs font-mono font-bold text-brand-600 bg-brand-50 px-3.5 py-1.5 rounded-xl border border-brand-100">
+          {filteredAlerts.length} Incident{filteredAlerts.length !== 1 ? 's' : ''} Tracked
         </div>
       </div>
 
@@ -97,14 +124,14 @@ export const AlertCenterPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
-              {alerts.length === 0 ? (
+              {filteredAlerts.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400 font-sans">
-                    No active incident alerts registered.
+                    No incident alerts registered for current filters.
                   </td>
                 </tr>
               ) : (
-                alerts.map((a) => (
+                filteredAlerts.map((a) => (
                   <tr key={a.id} className="hover:bg-brand-50/20 transition-colors">
                     <td className="py-3.5 px-5 font-mono font-bold text-brand-600">{a.id}</td>
                     <td className="py-3.5 px-5">
@@ -137,11 +164,11 @@ export const AlertCenterPage: React.FC = () => {
                         {a.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-5 text-right">
+                    <td className="py-3.5 px-5 text-right whitespace-nowrap">
                       {a.status === 'ACTIVE' && (
                         <button
                           onClick={() => handleAcknowledge(a.id)}
-                          className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[11px] font-semibold transition-colors mr-2"
+                          className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl text-[11px] font-bold transition-all shadow-sm mr-2 cursor-pointer"
                         >
                           Ack
                         </button>
@@ -149,10 +176,15 @@ export const AlertCenterPage: React.FC = () => {
                       {a.status !== 'RESOLVED' && (
                         <button
                           onClick={() => handleResolve(a.id)}
-                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-semibold transition-colors"
+                          className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-[11px] font-bold transition-all shadow-sm cursor-pointer"
                         >
                           Resolve
                         </button>
+                      )}
+                      {a.status === 'RESOLVED' && (
+                        <span className="text-[11px] font-semibold text-emerald-600 flex items-center justify-end gap-1">
+                          <Check className="w-3.5 h-3.5" /> Resolved
+                        </span>
                       )}
                     </td>
                   </tr>
