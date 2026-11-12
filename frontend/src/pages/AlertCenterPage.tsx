@@ -135,13 +135,12 @@ export const AlertCenterPage: React.FC = () => {
                   <tr key={a.id} className="hover:bg-brand-50/20 transition-colors">
                     <td className="py-3.5 px-5 font-mono font-bold text-brand-600">{a.id}</td>
                     <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${
-                        a.severity === 'CRITICAL'
+                      <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${a.severity === 'CRITICAL'
                           ? 'bg-red-50 text-red-600 border border-red-100'
                           : a.severity === 'WARNING'
-                          ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                          : 'bg-brand-50 text-brand-600 border border-brand-100'
-                      }`}>
+                            ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                            : 'bg-brand-50 text-brand-600 border border-brand-100'
+                        }`}>
                         {a.severity}
                       </span>
                     </td>
@@ -154,13 +153,12 @@ export const AlertCenterPage: React.FC = () => {
                       {new Date(a.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </td>
                     <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${
-                        a.status === 'ACTIVE'
+                      <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${a.status === 'ACTIVE'
                           ? 'bg-red-100 text-red-700'
                           : a.status === 'ACKNOWLEDGED'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-emerald-100 text-emerald-700'
-                      }`}>
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}>
                         {a.status}
                       </span>
                     </td>
