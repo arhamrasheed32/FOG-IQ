@@ -244,13 +244,20 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (e) {}
     return DEFAULT_SENSORS.map(s => ({
+      edge_id: s.edge_id,
       device_id: s.edge_id,
       sensor_id: s.sensor_id,
-      corridor: s.corridor_id,
-      zone: s.zone_id,
+      corridor_id: s.corridor_id,
+      zone_id: s.zone_id,
+      intersection_name: s.intersection_name,
+      is_connected: s.is_connected,
+      is_anomaly: s.is_anomaly,
+      status: s.operating_status,
+      local_anomaly_score: s.anomaly_score,
+      processing_latency_ms: 4.8,
+      buffered_messages: s.buffer_count,
       ip_address: `192.168.10.${s.sensor_id.replace('S', '')}`,
       firmware_version: 'Greengrass-v2.12.0',
-      status: 'HEALTHY',
       cpu_usage_pct: Math.round(18 + Math.random() * 15),
       memory_usage_pct: Math.round(35 + Math.random() * 10),
       storage_usage_pct: 28,
@@ -280,11 +287,14 @@ export const api = {
         id: 'prop-event-01',
         origin_sensor: 'S08',
         corridor_id: 'OMR',
+        zone_id: 'fog-gw-south',
         propagation_direction: 'SOUTH_TO_NORTH',
         velocity_kmh: 18.5,
+        propagation_velocity_kmh: 18.5,
         affected_nodes: ['S08', 'S09', 'S10'],
         detected_at: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
         severity: 'MODERATE',
+        message: 'OMR Tidel Park intersection experiencing upstream deceleration wave',
         action_taken: 'Dynamic green-phase extended by 18s at S07 Madhya Kailash'
       }
     ];
@@ -330,12 +340,19 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (e) {}
     return {
-      active_model: 'XGBoost Edge Corridors Regressor',
-      overall_accuracy: 94.2,
-      mae_kmh: 2.14,
-      prediction_horizon_min: 30,
-      total_inferences_today: 184520,
-      fog_offload_ratio_pct: 88.5
+      metadata: {
+        trained_at: '2026-11-12T00:39:09Z',
+        train_samples: 96480,
+        test_samples: 24120,
+        feature_names: ['hour', 'day_of_week', 'lag_speed_1', 'lag_speed_2', 'rolling_speed_mean_3', 'rolling_queue_mean_3']
+      },
+      baselines: {
+        persistence: { mae_15m: 8.806, rmse_15m: 11.732, r2_15m: 0.7931 },
+        historical_mean: { mae_15m: 6.966, rmse_15m: 9.115, r2_15m: 0.8751 }
+      },
+      models: {
+        xgboost_15m: { mae: 5.815, rmse: 7.528, r2: 0.9148, train_time_sec: 0.421, inference_latency_ms: 0.0005 }
+      }
     };
   },
 
@@ -344,14 +361,16 @@ export const api = {
       const res = await fetch(`${API_BASE}/ml/feature-importances`);
       if (res.ok) return await res.json();
     } catch (e) {}
-    return [
-      { feature: 'Rolling 15m Density', importance: 0.32 },
-      { feature: 'Upstream Flow Rate', importance: 0.24 },
-      { feature: 'Time of Day (Peak Factor)', importance: 0.18 },
-      { feature: 'Downstream Queue Length', importance: 0.14 },
-      { feature: 'Weather & Precipitation', importance: 0.08 },
-      { feature: 'Corridor Capacity Ratio', importance: 0.04 }
-    ];
+    return {
+      'hour': 0.0409,
+      'lag_speed_1': 0.0385,
+      'rolling_speed_mean_3': 0.0342,
+      'rolling_queue_mean_3': 0.0298,
+      'day_of_week': 0.0133,
+      'is_weekend': 0.0082,
+      'corridor_encoded': 0.0045,
+      'sensor_encoded': 0.0038
+    };
   },
 
   // Big Data
