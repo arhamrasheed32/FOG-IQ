@@ -55,23 +55,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }`}
     >
       <div>
-        {/* Brand Header */}
-        <div className="h-20 flex items-center px-6 justify-between">
-          <div className={`flex items-center gap-3 overflow-hidden ${collapsed ? 'justify-center w-full' : ''}`}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-pink-500 flex items-center justify-center shadow-glowPurple flex-shrink-0">
-              <Radio className="w-5 h-5 text-white" />
+        {/* Brand Header with Custom Official Logo */}
+        <div className="h-20 flex items-center px-4 justify-between border-b border-slate-200/80">
+          {!collapsed ? (
+            <div className="w-full flex items-center justify-start py-1">
+              <img
+                src="/fog-iq-logo.jpg"
+                alt="FOG-IQ Intelligent Traffic Platform"
+                className="h-10 w-auto object-contain rounded-lg shadow-sm"
+              />
             </div>
-            {!collapsed && (
-              <div className="flex flex-col">
-                <span className="font-extrabold tracking-tight text-lg text-slate-900">
-                  FOG-IQ<span className="text-brand-600">.</span>
-                </span>
-                <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">
-                  Urban Mobility
-                </span>
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="w-full flex items-center justify-center">
+              <img
+                src="/fog-iq-emblem.png"
+                alt="FOG-IQ"
+                className="w-9 h-9 object-contain rounded-lg shadow-sm"
+              />
+            </div>
+          )}
         </div>
 
         {/* Navigation List */}

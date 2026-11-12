@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/fog-iq-logo.jpg" alt="FOG-IQ Intelligent Traffic Platform" width="700" />
+</p>
+
 # FOG-IQ
 ### Intelligent Urban Traffic Operations, Real-Time Congestion Monitoring, Machine Learning Forecasting and Distributed Fog–Edge–Cloud Computing
 
