@@ -13,7 +13,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 REGION = "us-east-1"
-BUCKET_NAME = "fog-iq-frontend-654524017474"
+BUCKET_NAME = "fog-iq--12112026"
 DIST_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 
 s3 = boto3.client("s3", region_name=REGION)

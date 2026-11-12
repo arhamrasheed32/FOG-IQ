@@ -8,7 +8,7 @@
 Target Geography: **Greater Chennai, Tamil Nadu, India**
 
 <p align="center">
-  <a href="http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com" target="_blank">
+  <a href="http://fog-iq--12112026.s3-website-us-east-1.amazonaws.com" target="_blank">
     <img src="https://img.shields.io/badge/Live%20Demo-AWS%20S3%20Static%20Hosting-FF9900?style=for-the-badge&logo=amazons3&logoColor=white" alt="Live Demo" />
   </a>
   <img src="https://img.shields.io/badge/AWS%20Region-us--east--1-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white" alt="AWS Region" />
@@ -16,7 +16,7 @@ Target Geography: **Greater Chennai, Tamil Nadu, India**
   <img src="https://img.shields.io/badge/FastAPI-Python%203.10%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
 </p>
 
-> 🌐 **Live Public AWS Deployment**: [http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com](http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com)  
+> 🌐 **Live Public AWS Deployment**: [http://fog-iq--12112026.s3-website-us-east-1.amazonaws.com](http://fog-iq--12112026.s3-website-us-east-1.amazonaws.com)  
 > Hosted with high-speed static asset distribution, zero-cold-start delivery, resilient offline fallback telemetry simulation, and interactive Chennai arterial GIS mapping.
 
 ---
@@ -112,7 +112,7 @@ python infrastructure/aws/deploy_frontend.py
 python infrastructure/aws/deploy_and_wait.py
 ```
 
-- **S3 Static Website URL**: `http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com`
+- **S3 Static Website URL**: `http://fog-iq--12112026.s3-website-us-east-1.amazonaws.com`
 - **Region**: `us-east-1` (N. Virginia)
 
 
