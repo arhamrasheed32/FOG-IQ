@@ -1,0 +1,48 @@
+{
+  "RecipeFormatVersion": "2020-05-31",
+  "ComponentName": "com.fogiq.traffic.edge.processor",
+  "ComponentVersion": "1.0.0",
+  "ComponentDescription": "FOG-IQ Urban Traffic Edge Computing Component for real-time sensor processing and local anomaly inference",
+  "ComponentPublisher": "FOG-IQ Systems",
+  "ComponentConfiguration": {
+    "DefaultConfiguration": {
+      "ZoneId": "fog-gw-central",
+      "SensorId": "S01",
+      "SamplingIntervalSec": 2,
+      "AnomalyThreshold": 0.65,
+      "CloudMqttTopic": "fogiq/chennai/edge/telemetry",
+      "LocalBufferMax": 1000
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {
+        "Install": "python3 -m pip install --user paho-mqtt numpy scikit-learn",
+        "Run": "python3 -u {artifacts:path}/edge_processor.py --zone {configuration:/ZoneId} --sensor {configuration:/SensorId}"
+      },
+      "Artifacts": [
+        {
+          "URI": "s3://fog-iq-greengrass-artifacts/components/edge_processor.py"
+        }
+      ]
+    },
+    {
+      "Platform": {
+        "os": "windows"
+      },
+      "Lifecycle": {
+        "Install": "python -m pip install paho-mqtt numpy scikit-learn",
+        "Run": "python -u {artifacts:path}/edge_processor.py --zone {configuration:/ZoneId} --sensor {configuration:/SensorId}"
+      },
+      "Artifacts": [
+        {
+          "URI": "s3://fog-iq-greengrass-artifacts/components/edge_processor.py"
+        }
+      ]
+    }
+  ]
+}
+

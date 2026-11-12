@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "trained_at": "2026-11-12T00:39:09.392779Z",
+    "train_samples": 96480,
+    "test_samples": 24120,
+    "feature_names": [
+      "corridor_encoded",
+      "sensor_encoded",
+      "hour",
+      "day_of_week",
+      "is_weekend",
+      "lag_speed_1",
+      "lag_speed_2",
+      "lag_speed_3",
+      "lag_speed_6",
+      "lag_ci_1",
+      "lag_ci_2",
+      "lag_ci_3",
+      "rolling_speed_mean_3",
+      "rolling_speed_std_3",
+      "rolling_queue_mean_3"
+    ]
+  },
+  "baselines": {
+    "persistence": {
+      "mae_15m": 8.805704809286897,
+      "rmse_15m": 11.73183467751304,
+      "r2_15m": 0.7930824640060476
+    },
+    "historical_mean": {
+      "mae_15m": 6.966053586235489,
+      "rmse_15m": 9.11515474047443,
+      "r2_15m": 0.875091060591825
+    }
+  },
+  "models": {
+    "xgboost_15m": {
+      "mae": 5.815,
+      "rmse": 7.528,
+      "r2": 0.9148,
+      "train_time_sec": 0.421,
+      "inference_latency_ms": 0.0005,
+      "feature_importances": {
+        "corridor_encoded": 0.0010000000474974513,
+        "sensor_encoded": 0.0007999999797903001,
+        "hour": 0.04089999943971634,
+        "day_of_week": 0.013299999758601189,
+        "is_weekend": 0.008200000040233135,
+        "lag_speed_1": 0.007799999788403511,
+        "lag_speed_2": 0.00139999995008111,
+        "lag_speed_3": 0.001500000013038516,
+        "lag_speed_6": 0.002199999988079071,
+        "lag_ci_1": 0.48170000314712524,
+        "lag_ci_2": 0.23309999704360962,
+        "lag_ci_3": 0.02879999950528145,
+        "rolling_speed_mean_3": 0.010400000028312206,
+        "rolling_speed_std_3": 0.0010000000474974513,
+        "rolling_queue_mean_3": 0.1678999960422516
+      }
+    },
+    "xgboost_5m": {
+      "mae": 5.855,
+      "rmse": 7.58,
+      "r2": 0.9137
+    },
+    "xgboost_30m": {
+      "mae": 5.802,
+      "rmse": 7.472,
+      "r2": 0.9161
+    },
+    "random_forest_15m": {
+      "mae": 20.715,
+      "rmse": 25.88,
+      "r2": -0.0069
+    },
+    "isolation_forest": {
+      "features": [
+        "lag_speed_1",
+        "lag_ci_1",
+        "rolling_speed_mean_3",
+        "rolling_speed_std_3",
+        "rolling_queue_mean_3"
+      ],
+      "contamination": 0.04,
+      "algorithm": "iForest (Liu et al.)"
+    },
+    "congestion_classifier": {
+      "confusion_matrix": [
+        [
+          8960,
+          355,
+          0,
+          1,
+          0
+        ],
+        [
+          7070,
+          368,
+          0,
+          0,
+          0
+        ],
+        [
+          3024,
+          48,
+          0,
+          0,
+          0
+        ],
+        [
+          2492,
+          36,
+          0,
+          0,
+          0
+        ],
+        [
+          1705,
+          61,
+          0,
+          0,
+          0
+        ]
+      ],
+      "classes": [
+        "Free Flow (0-20)",
+        "Light (21-40)",
+        "Moderate (41-60)",
+        "Heavy (61-80)",
+        "Severe (81-100)"
+      ],
+      "accuracy": 0.3867,
+      "macro_f1": 0.1278
+    }
+  }
+}

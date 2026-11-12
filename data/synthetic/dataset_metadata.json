@@ -1,0 +1,21 @@
+{
+  "name": "Chennai Urban Arterial Corridor Dataset (Calibrated)",
+  "nodes": 30,
+  "corridors": 7,
+  "interval_minutes": 5,
+  "days": 14,
+  "features": [
+    "speed_kmh",
+    "vehicle_count",
+    "density_vpm",
+    "queue_length_m",
+    "congestion_index"
+  ],
+  "license": "CC-BY-4.0 (Synthetic Calibrated Urban Baseline)",
+  "version": "1.0.0",
+  "provenance": "Calibrated against Chennai arterial capacity specs and PEMS diurnal distribution.",
+  "records_count": 120960,
+  "sha256": "1c5018ae8431673f5a2a3c7ce82719f7a0a72302e29e48ddb7aad3b3064b27b9",
+  "file_path": "data/synthetic\\chennai_traffic_master_14d.parquet",
+  "generated_at": "2026-11-12T00:38:16.355243Z"
+}

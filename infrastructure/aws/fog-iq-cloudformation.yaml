@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'FOG-IQ Dedicated Cloud Infrastructure: Distributed Traffic Intelligence, S3 Data Lake, DynamoDB Tables, SNS Alerts and CloudWatch'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: 'production'
+    AllowedValues: ['development', 'staging', 'production']
+    Description: Deployment stage for FOG-IQ resources.
+
+Resources:
+  # 1. S3 Analytical Telemetry Data Lake
+  FogIQTelemetryDataLake:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'fog-iq-telemetry-datalake-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionOldTelemetryToGlacier
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+            ExpirationInDays: 365
+
+  # 2. DynamoDB Tables
+  FogIQSensorStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'fog-iq-sensor-state-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: sensor_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sensor_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  FogIQAlertsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'fog-iq-alerts-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: alert_id
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+      KeySchema:
+        - AttributeName: alert_id
+          KeyType: HASH
+        - AttributeName: created_at
+          KeyType: RANGE
+
+  # 3. Amazon SNS Alert Topic
+  FogIQAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'fog-iq-critical-alerts-${Environment}'
+      DisplayName: 'FOG-IQ Intelligent Urban Incident Alert Broadcast'
+
+  # 4. CloudWatch Log Group
+  FogIQLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/fog-iq/${Environment}/telemetry-pipeline'
+      RetentionInDays: 14
+
+  # 5. IAM Execution Role for Ingestion & Greengrass
+  FogIQExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'fog-iq-execution-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: FogIQTableAndLakeAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:Scan'
+                Resource:
+                  - !GetAtt FogIQSensorStateTable.Arn
+                  - !GetAtt FogIQAlertsTable.Arn
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !GetAtt FogIQTelemetryDataLake.Arn
+                  - !Sub '${FogIQTelemetryDataLake.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - 'sns:Publish'
+                Resource: !Ref FogIQAlertsTopic
+
+Outputs:
+  DataLakeBucket:
+    Description: S3 Data Lake for partitioned Parquet telemetry
+    Value: !Ref FogIQTelemetryDataLake
+  SensorStateTable:
+    Description: DynamoDB Real-Time Sensor State Table
+    Value: !Ref FogIQSensorStateTable
+  AlertsTable:
+    Description: DynamoDB Operational Alerts Table
+    Value: !Ref FogIQAlertsTable
+  AlertsTopicArn:
+    Description: SNS Topic ARN for traffic incidents
+    Value: !Ref FogIQAlertsTopic
