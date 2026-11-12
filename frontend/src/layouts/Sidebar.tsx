@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeAlertsCount,
 }) => {
   const navItems = [
-    { id: 'command-center' as NavTab, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'command-center' as NavTab, label: 'Command Center', icon: LayoutDashboard },
     { id: 'live-map' as NavTab, label: 'Traffic Map', icon: Map },
     { id: 'routes' as NavTab, label: 'Route Intelligence', icon: Navigation },
     { id: 'corridors' as NavTab, label: 'Corridor Monitor', icon: Activity },

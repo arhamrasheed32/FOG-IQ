@@ -87,7 +87,7 @@ export const App: React.FC = () => {
   const activeAlerts = streamData.alerts.filter((a) => a.status === 'ACTIVE');
 
   const tabTitles: Record<NavTab, string> = {
-    'command-center': 'Dashboard',
+    'command-center': 'Command Center',
     'live-map': 'Traffic Map',
     'routes': 'Route Intelligence',
     'corridors': 'Corridor Monitor',
