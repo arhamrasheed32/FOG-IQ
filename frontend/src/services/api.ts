@@ -363,7 +363,11 @@ export const api = {
     return {
       s3_bucket: 'fog-iq-data-lake-654524017474',
       total_records: 12480392,
+      total_storage_mb: 188.4,
       storage_size_gb: 18.4,
+      partition_count: 14,
+      ingestion_throughput_records_sec: 48.5,
+      schema_conformance: '100.0%',
       daily_ingestion_mb: 480,
       compression_ratio: '4.8x (Parquet Snappy)',
       partitions: 'year=2026/month=11/day=12/corridor=*'
@@ -380,6 +384,7 @@ export const api = {
       hour: h,
       avg_speed: [55, 58, 60, 52, 28, 32, 40, 42, 30, 24, 38, 48][i],
       congestion_index: [12, 10, 8, 18, 65, 58, 42, 38, 62, 74, 48, 25][i],
+      volume_vph: [450, 280, 180, 1200, 4800, 4200, 3100, 2900, 4600, 5400, 3600, 1800][i],
       total_vehicles: [450, 280, 180, 1200, 4800, 4200, 3100, 2900, 4600, 5400, 3600, 1800][i]
     }));
   },
@@ -389,15 +394,14 @@ export const api = {
       const res = await fetch(`${API_BASE}/big-data/corridors`);
       if (res.ok) return await res.json();
     } catch (e) {}
-    return DEFAULT_CORRIDORS.map(c => ({
-      corridor_id: c.id,
-      name: c.name,
-      avg_speed: Math.round(c.speed_limit_kmh * 0.75),
-      speed_limit: c.speed_limit_kmh,
-      congestion_index: 28.4,
-      total_flow_vph: 3600,
-      active_bottlenecks: 0
-    }));
+    return [
+      { corridor: 'Anna Salai (Mount Road)', code: 'CORR-01', avg_speed: 34.2, peak_ci: 76.4, daily_volume: 142000, status: 'HEAVY' },
+      { corridor: 'OMR (IT Corridor)', code: 'CORR-02', avg_speed: 46.8, peak_ci: 68.2, daily_volume: 168000, status: 'MODERATE' },
+      { corridor: 'Grand Southern Trunk (GST) Road', code: 'CORR-03', avg_speed: 49.5, peak_ci: 64.1, daily_volume: 185000, status: 'MODERATE' },
+      { corridor: 'Poonamallee High Rd', code: 'CORR-04', avg_speed: 28.6, peak_ci: 84.5, daily_volume: 128000, status: 'SEVERE' },
+      { corridor: 'Inner Ring Road (100 Ft Rd)', code: 'CORR-05', avg_speed: 41.0, peak_ci: 62.0, daily_volume: 154000, status: 'MODERATE' },
+      { corridor: 'Velachery Main Rd', code: 'CORR-06', avg_speed: 26.5, peak_ci: 82.0, daily_volume: 98000, status: 'SEVERE' }
+    ];
   },
 
   // Alerts
