@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -41,7 +41,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration
+# CORS & Private Network Access configuration
+@app.middleware("http")
+async def add_cors_and_pna_headers(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+    else:
+        response = await call_next(request)
+    
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    if request.headers.get("access-control-request-private-network") == "true":
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
