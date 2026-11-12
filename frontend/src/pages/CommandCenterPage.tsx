@@ -42,26 +42,35 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
   onSelectSensor,
 }) => {
   const [flowRange, setFlowRange] = React.useState<'Week' | 'Month' | 'Today'>('Week');
-  const [capacityRange, setCapacityRange] = React.useState<'Month' | 'Quarter' | 'Real-time'>('Month');
-  const [diurnalRange, setDiurnalRange] = React.useState<'Today' | 'Yesterday' | 'Baseline'>('Today');
+  const [capacityRange, setCapacityRange] = React.useState<'Real-time' | 'Today' | 'Month'>('Real-time');
+  const [diurnalRange, setDiurnalRange] = React.useState<'Today' | 'Yesterday' | '7-Day Average'>('Today');
 
-  const cycleFlowRange = () => {
-    if (flowRange === 'Week') setFlowRange('Month');
-    else if (flowRange === 'Month') setFlowRange('Today');
-    else setFlowRange('Week');
+  // Dynamic Flow Data based on selected range (Week / Today / Month)
+  const flowDataByRange = {
+    Week: {
+      categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      freeFlow: [20, 18, 22, 16, 25, 20, 15],
+      lightFlow: [35, 38, 30, 42, 30, 36, 40],
+      moderateQueue: [25, 22, 28, 20, 26, 24, 25],
+      severeBottleneck: [20, 22, 20, 22, 19, 20, 20]
+    },
+    Today: {
+      categories: ['04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+      freeFlow: [55, 15, 28, 18, 32, 50],
+      lightFlow: [30, 25, 32, 28, 30, 25],
+      moderateQueue: [10, 38, 26, 32, 24, 18],
+      severeBottleneck: [5, 22, 14, 22, 14, 7]
+    },
+    Month: {
+      categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+      freeFlow: [22, 25, 19, 24],
+      lightFlow: [38, 34, 40, 35],
+      moderateQueue: [24, 22, 26, 23],
+      severeBottleneck: [16, 19, 15, 18]
+    }
   };
 
-  const cycleCapacityRange = () => {
-    if (capacityRange === 'Month') setCapacityRange('Quarter');
-    else if (capacityRange === 'Quarter') setCapacityRange('Real-time');
-    else setCapacityRange('Month');
-  };
-
-  const cycleDiurnalRange = () => {
-    if (diurnalRange === 'Today') setDiurnalRange('Yesterday');
-    else if (diurnalRange === 'Yesterday') setDiurnalRange('Baseline');
-    else setDiurnalRange('Today');
-  };
+  const activeFlow = flowDataByRange[flowRange] || flowDataByRange.Week;
 
   // Chart 1: Statistics of Active Applications / Corridor Multi-Bar Chart
   const barChartOption = {
@@ -83,7 +92,7 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
     },
     xAxis: {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      data: activeFlow.categories,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: { color: '#94A3B8', fontSize: 11, fontWeight: 500 },
@@ -104,38 +113,92 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
         name: 'Free Flow',
         type: 'bar',
         stack: 'total',
-        barWidth: 8,
-        itemStyle: { color: '#6366F1', borderRadius: [0, 0, 0, 0] },
-        data: [20, 18, 22, 16, 25, 20, 15],
+        barWidth: flowRange === 'Month' ? 14 : (flowRange === 'Today' ? 10 : 8),
+        itemStyle: { color: '#6366F1' },
+        data: activeFlow.freeFlow,
       },
       {
         name: 'Light Traffic',
         type: 'bar',
         stack: 'total',
-        barWidth: 8,
-        itemStyle: { color: '#FBBF24', borderRadius: [0, 0, 0, 0] },
-        data: [35, 38, 30, 42, 30, 36, 40],
+        barWidth: flowRange === 'Month' ? 14 : (flowRange === 'Today' ? 10 : 8),
+        itemStyle: { color: '#FBBF24' },
+        data: activeFlow.lightFlow,
       },
       {
         name: 'Moderate Queue',
         type: 'bar',
         stack: 'total',
-        barWidth: 8,
-        itemStyle: { color: '#FF6B4A', borderRadius: [0, 0, 0, 0] },
-        data: [25, 22, 28, 20, 26, 24, 25],
+        barWidth: flowRange === 'Month' ? 14 : (flowRange === 'Today' ? 10 : 8),
+        itemStyle: { color: '#FF6B4A' },
+        data: activeFlow.moderateQueue,
       },
       {
         name: 'Severe Bottleneck',
         type: 'bar',
         stack: 'total',
-        barWidth: 8,
+        barWidth: flowRange === 'Month' ? 14 : (flowRange === 'Today' ? 10 : 8),
         itemStyle: { color: '#C7D2FE', borderRadius: [4, 4, 0, 0] },
-        data: [20, 22, 20, 22, 19, 20, 20],
+        data: activeFlow.severeBottleneck,
       },
     ],
   };
 
-  // Chart 2: Diurnal Traffic Received Time Area Spline Curve (matching bottom left in image)
+  // Dynamic Arterial Capacity based on range
+  const capacityDataByRange = {
+    'Real-time': {
+      annaSalai: 88,
+      omr: 55,
+      gst: 47,
+      poonamallee: 35,
+      innerRing: 24,
+      networkStatus: 'Optimal Flow'
+    },
+    'Today': {
+      annaSalai: 76,
+      omr: 68,
+      gst: 58,
+      poonamallee: 44,
+      innerRing: 32,
+      networkStatus: 'Moderate Peak'
+    },
+    'Month': {
+      annaSalai: 64,
+      omr: 61,
+      gst: 52,
+      poonamallee: 39,
+      innerRing: 28,
+      networkStatus: 'Monthly Mean'
+    }
+  };
+
+  const activeCapacity = capacityDataByRange[capacityRange] || capacityDataByRange['Real-time'];
+
+  // Dynamic Diurnal Profile based on range
+  const diurnalDataByRange = {
+    'Today': {
+      times: ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
+      values: [35, 62, 58, 88, 65, 82, 54],
+      color: '#FF6B4A',
+      rgba: 'rgba(255, 107, 74, 0.28)'
+    },
+    'Yesterday': {
+      times: ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
+      values: [28, 54, 48, 74, 58, 92, 46],
+      color: '#6366F1',
+      rgba: 'rgba(99, 102, 241, 0.28)'
+    },
+    '7-Day Average': {
+      times: ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
+      values: [32, 58, 52, 80, 61, 85, 50],
+      color: '#10B981',
+      rgba: 'rgba(16, 185, 129, 0.28)'
+    }
+  };
+
+  const activeDiurnal = diurnalDataByRange[diurnalRange] || diurnalDataByRange.Today;
+
+  // Chart 2: Diurnal Traffic Received Time Area Spline Curve
   const splineChartOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -153,7 +216,7 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
+      data: activeDiurnal.times,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: { color: '#94A3B8', fontSize: 10 },
@@ -172,8 +235,8 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
         symbol: 'circle',
         symbolSize: 6,
         showSymbol: false,
-        lineStyle: { color: '#FF6B4A', width: 2.5 },
-        itemStyle: { color: '#FF6B4A' },
+        lineStyle: { color: activeDiurnal.color, width: 2.5 },
+        itemStyle: { color: activeDiurnal.color },
         areaStyle: {
           color: {
             type: 'linear',
@@ -182,12 +245,12 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(255, 107, 74, 0.28)' },
-              { offset: 1, color: 'rgba(255, 107, 74, 0.0)' },
+              { offset: 0, color: activeDiurnal.rgba },
+              { offset: 1, color: 'rgba(255, 255, 255, 0.0)' },
             ],
           },
         },
-        data: [35, 62, 58, 88, 65, 82, 54],
+        data: activeDiurnal.values,
       },
     ],
   };
@@ -400,20 +463,24 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
             <h3 className="text-sm font-bold text-slate-800">
               Statistics of Active Mobility Flow
             </h3>
-            <button 
-              onClick={cycleFlowRange}
-              title="Click to cycle time range"
-              className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer"
-            >
-              <Calendar className="w-3.5 h-3.5 text-brand-500" />
-              <span>{flowRange}</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
+            <div className="relative">
+              <select
+                value={flowRange}
+                onChange={(e) => setFlowRange(e.target.value as any)}
+                className="appearance-none flex items-center gap-1.5 pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              >
+                <option value="Week">Week</option>
+                <option value="Today">Today</option>
+                <option value="Month">Month</option>
+              </select>
+              <Calendar className="w-3.5 h-3.5 text-brand-500 absolute left-2.5 top-2.5 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
           </div>
 
           {/* Chart Viewport */}
           <div className="w-full h-64">
-            <ReactECharts option={barChartOption} style={{ height: '100%', width: '100%' }} />
+            <ReactECharts option={barChartOption} notMerge={true} style={{ height: '100%', width: '100%' }} />
           </div>
 
           {/* Legend Pills at Bottom */}
@@ -440,15 +507,19 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
               <h3 className="text-sm font-bold text-slate-800">
                 Arterial Capacity Load
               </h3>
-              <button 
-                onClick={cycleCapacityRange}
-                title="Click to cycle capacity time range"
-                className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer"
-              >
-                <Calendar className="w-3 h-3 text-brand-500" />
-                <span>{capacityRange}</span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
+              <div className="relative">
+                <select
+                  value={capacityRange}
+                  onChange={(e) => setCapacityRange(e.target.value as any)}
+                  className="appearance-none flex items-center gap-1 pl-7 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                >
+                  <option value="Real-time">Real-time</option>
+                  <option value="Today">Today</option>
+                  <option value="Month">Month</option>
+                </select>
+                <Calendar className="w-3 h-3 text-brand-500 absolute left-2.5 top-2.5 pointer-events-none" />
+                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+              </div>
             </div>
 
             {/* List with Progress Bars - Clickable to navigate to corridors */}
@@ -463,10 +534,10 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
                   <span className="flex items-center gap-2 text-slate-700 group-hover:text-brand-600">
                     <span className="w-2 h-2 rounded-full bg-brand-600" /> Anna Salai Arterial
                   </span>
-                  <span className="text-slate-800 font-mono">80%</span>
+                  <span className="text-slate-800 font-mono">{activeCapacity.annaSalai}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-600 rounded-full" style={{ width: '80%' }} />
+                  <div className="h-full bg-brand-600 rounded-full transition-all duration-500" style={{ width: `${activeCapacity.annaSalai}%` }} />
                 </div>
               </div>
 
@@ -480,10 +551,10 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
                   <span className="flex items-center gap-2 text-slate-700 group-hover:text-amber-500">
                     <span className="w-2 h-2 rounded-full bg-amber-400" /> OMR (IT Expressway)
                   </span>
-                  <span className="text-slate-800 font-mono">55%</span>
+                  <span className="text-slate-800 font-mono">{activeCapacity.omr}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full" style={{ width: '55%' }} />
+                  <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${activeCapacity.omr}%` }} />
                 </div>
               </div>
 
@@ -497,10 +568,10 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
                   <span className="flex items-center gap-2 text-slate-700 group-hover:text-coral">
                     <span className="w-2 h-2 rounded-full bg-coral" /> GST Road Gateway
                   </span>
-                  <span className="text-slate-800 font-mono">47%</span>
+                  <span className="text-slate-800 font-mono">{activeCapacity.gst}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-coral rounded-full" style={{ width: '47%' }} />
+                  <div className="h-full bg-coral rounded-full transition-all duration-500" style={{ width: `${activeCapacity.gst}%` }} />
                 </div>
               </div>
 
@@ -514,10 +585,10 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
                   <span className="flex items-center gap-2 text-slate-700 group-hover:text-brand-600">
                     <span className="w-2 h-2 rounded-full bg-brand-300" /> Poonamallee High Rd
                   </span>
-                  <span className="text-slate-800 font-mono">35%</span>
+                  <span className="text-slate-800 font-mono">{activeCapacity.poonamallee}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-300 rounded-full" style={{ width: '35%' }} />
+                  <div className="h-full bg-brand-300 rounded-full transition-all duration-500" style={{ width: `${activeCapacity.poonamallee}%` }} />
                 </div>
               </div>
 
@@ -531,10 +602,10 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
                   <span className="flex items-center gap-2 text-slate-700 group-hover:text-emerald-600">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" /> Inner Ring Road
                   </span>
-                  <span className="text-slate-800 font-mono">24%</span>
+                  <span className="text-slate-800 font-mono">{activeCapacity.innerRing}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '24%' }} />
+                  <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${activeCapacity.innerRing}%` }} />
                 </div>
               </div>
             </div>
@@ -542,7 +613,7 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
 
           <div className="pt-4 mt-2 border-t border-slate-200/90 flex items-center justify-between text-[11px] text-slate-400">
             <span>Overall Network Load</span>
-            <span className="font-bold text-brand-600 font-mono">Optimal Flow</span>
+            <span className="font-bold text-brand-600 font-mono">{activeCapacity.networkStatus}</span>
           </div>
         </div>
       </div>
@@ -555,19 +626,23 @@ export const CommandCenterPage: React.FC<CommandCenterProps> = ({
             <h3 className="text-sm font-bold text-slate-800">
               Diurnal Flow & Ingestion Profile
             </h3>
-            <button 
-              onClick={cycleDiurnalRange}
-              title="Click to cycle diurnal profile"
-              className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer"
-            >
-              <Calendar className="w-3.5 h-3.5 text-coral" />
-              <span>{diurnalRange}</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
+            <div className="relative">
+              <select
+                value={diurnalRange}
+                onChange={(e) => setDiurnalRange(e.target.value as any)}
+                className="appearance-none flex items-center gap-1.5 pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              >
+                <option value="Today">Today</option>
+                <option value="Yesterday">Yesterday</option>
+                <option value="7-Day Average">7-Day Average</option>
+              </select>
+              <Calendar className="w-3.5 h-3.5 text-coral absolute left-2.5 top-2.5 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
           </div>
 
           <div className="w-full h-56">
-            <ReactECharts option={splineChartOption} style={{ height: '100%', width: '100%' }} />
+            <ReactECharts option={splineChartOption} notMerge={true} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
 
