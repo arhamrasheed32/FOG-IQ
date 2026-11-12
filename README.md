@@ -7,6 +7,18 @@
 
 Target Geography: **Greater Chennai, Tamil Nadu, India**
 
+<p align="center">
+  <a href="http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Demo-AWS%20S3%20Static%20Hosting-FF9900?style=for-the-badge&logo=amazons3&logoColor=white" alt="Live Demo" />
+  </a>
+  <img src="https://img.shields.io/badge/AWS%20Region-us--east--1-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white" alt="AWS Region" />
+  <img src="https://img.shields.io/badge/TypeScript-React%2018%20%2B%20Vite-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="React Vite" />
+  <img src="https://img.shields.io/badge/FastAPI-Python%203.10%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+</p>
+
+> 🌐 **Live Public AWS Deployment**: [http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com](http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com)  
+> Hosted with high-speed static asset distribution, zero-cold-start delivery, resilient offline fallback telemetry simulation, and interactive Chennai arterial GIS mapping.
+
 ---
 
 ## 1. Quick Start Guide
@@ -80,4 +92,27 @@ cp .env.example .env
   - **Cloud / Data Lake Layer**: Parquet analytical lake capturing partitioned historical observations.
 - **Trained ML Models**: XGBoost multi-step horizon forecaster (+5m, +15m, +30m) achieving **R² = 0.9148** on chronological validation.
 - **Interactive Fault Injection**: Operator modal to perturb corridors and intersections in real-time (bottleneck shock, vehicle collision, sensor disconnection).
+
+---
+
+## 5. AWS Cloud Deployment
+
+FOG-IQ supports automated single-command deployment to AWS:
+
+```bash
+# 1. Build production React SPA
+cd frontend
+npm run build
+cd ..
+
+# 2. Deploy static hosting to S3 & configure CDN
+python infrastructure/aws/deploy_frontend.py
+
+# 3. Deploy Backend Cloud Infrastructure (DynamoDB, S3 Data Lake, SNS Alerting)
+python infrastructure/aws/deploy_and_wait.py
+```
+
+- **S3 Static Website URL**: `http://fog-iq-frontend-654524017474.s3-website-us-east-1.amazonaws.com`
+- **Region**: `us-east-1` (N. Virginia)
+
 
